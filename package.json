@@ -1,0 +1,40 @@
+{
+  "name": "@hdcola/mcp-server-playwright",
+  "version": "1.0.0",
+  "description": "Allows you to control and read your browser data via the MCP protocol",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "mcp-server-playwright": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "clean": "rm -rf build",
+    "build": "tsc && npm i --package-lock-only && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "watch": "npm run build && tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector node build/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "mcp",
+    "server",
+    "browser",
+    "playwright"
+  ],
+  "author": "hdcola",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.1",
+    "typescript": "^5.8.3"
+  }
+}
