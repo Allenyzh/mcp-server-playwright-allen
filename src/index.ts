@@ -3,7 +3,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { initializeContext, createAndNavigateToPage, getOpenPages, closeContext } from "./chrome.js";
+import { initializeContext, getOpenPages, closeContext, navigateToPage, getPageContent } from "./chrome.js";
 
 
 import { createRequire } from "module";
@@ -41,7 +41,7 @@ server.tool("navigate-to-page",
     url: z.string().describe("The URL to navigate to")
   },
   async (args, extra) => {
-    return createAndNavigateToPage(args.url);
+    return await navigateToPage(args.url);
   }
 );
 
@@ -49,9 +49,18 @@ server.tool("get-open-pages",
   "List all open browser pages",
   {},
   async (args, extra) => {
-    return getOpenPages();
+    return await getOpenPages();
   }
 );
+
+server.tool("get-page-content",
+  "Get the content of a page",
+  {},
+  async (args, extra) => {
+    return await getPageContent();
+  }
+);
+
 
 async function main() {
   // Create a transport instance

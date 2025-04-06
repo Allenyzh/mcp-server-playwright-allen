@@ -1,5 +1,7 @@
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { chromium, BrowserContext, Page } from 'playwright';
+import { Readability } from '@mozilla/readability';
+import { JSDOM } from 'jsdom';
 
 let browserContext: null | BrowserContext = null;
 
@@ -65,6 +67,92 @@ async function closeContext(): Promise<CallToolResult> {
     ],
   };
 }
+
+async function navigateToPage(url: string): Promise<CallToolResult> {
+  if (!browserContext) {
+    const msg = await initializeContext();
+    if (!browserContext) {
+      return msg;
+    }
+  }
+  let message = "";
+  try {
+    const pages = browserContext.pages();
+    if (pages.length > 0) {
+      const page = pages[0];
+      await page.goto(url);
+      let pageTitle = "";
+      try {
+        pageTitle = await page.title();
+      } catch (titleError) {
+        pageTitle = "[Unable to retrieve page title]";
+      }
+      message = `Successfully navigated to ${url}. Page title: ${pageTitle}`;
+    } else {
+      message = "No open pages to navigate.";
+    }
+  } catch (error: any) {
+    message = `Failed to navigate to ${url}: ${error.message}`;
+  }
+  return {
+    content: [
+      {
+        type: "text",
+        text: message,
+      }
+    ],
+  };
+}
+
+async function getCurrentPage(): Promise<Page | null> {
+  if (!browserContext) {
+    const msg = await initializeContext();
+    if (!browserContext) {
+      return null;
+    }
+  }
+  const pages = browserContext.pages();
+  if (pages.length > 0) {
+    return pages[0];
+  } else {
+    return null;
+  }
+}
+
+
+async function getPageContent(): Promise<CallToolResult> {
+  const page = await getCurrentPage();
+
+  let message = "";
+  if (!page) {
+    message = "No open pages to retrieve content from.";
+  } else {
+    try {
+      const rawHtml = await page.content();
+      const dom = new JSDOM(rawHtml, { url: page.url() });
+      const reader = new Readability(dom.window.document);
+      const article = reader.parse();
+
+      if (article && article.textContent) {
+        message = article.textContent;
+      }
+      else {
+        message = "Failed to parse article content.";
+      }
+    } catch (error: any) {
+      message = `Failed to retrieve page content: ${error.message}`;
+    }
+  }
+  return {
+    content: [
+      {
+        type: "text",
+        text: message,
+      }
+    ],
+  };
+}
+
 
 // Create a new page and navigate to specified URL
 async function createAndNavigateToPage(url: string): Promise<CallToolResult> {
@@ -144,4 +232,6 @@ async function getOpenPages(): Promise<CallToolResult> {
   };
 }
 
-export { initializeContext, createAndNavigateToPage, getOpenPages, closeContext };
+
+
+export { initializeContext, createAndNavigateToPage, getOpenPages, closeContext, navigateToPage, getPageContent };
