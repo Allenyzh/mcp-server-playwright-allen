@@ -18,7 +18,7 @@ const server = new McpServer({
 
 
 server.tool("open-browser",
-  "Open a browser",
+  "Open a browser instance",
   {
     url: z.string().optional().describe("The URL to open in the browser"),
   },
@@ -28,7 +28,7 @@ server.tool("open-browser",
 );
 
 server.tool("close-browser",
-  "Close the browser",
+  "Close the browser instance",
   {},
   async (args, extra) => {
     return await closeContext();
@@ -45,13 +45,13 @@ server.tool("navigate-to-page",
   }
 );
 
-server.tool("get-open-pages",
-  "List all open browser pages",
-  {},
-  async (args, extra) => {
-    return await getOpenPages();
-  }
-);
+// server.tool("get-open-pages",
+//   "List all open browser pages",
+//   {},
+//   async (args, extra) => {
+//     return await getOpenPages();
+//   }
+// );
 
 server.tool("get-page-content",
   "Get the content of a page",
