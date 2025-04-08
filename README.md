@@ -5,10 +5,11 @@ This project is an experimental project aimed at manipulating a browser through 
 ## Tools
 
 - open-browser(url) : Open a browser with the specified URL(option).
+- close-page(pageNumber: int) : Close a desiginated page in current browser.
 - close-browser() : Close the browser.
 - navigate-to-page(url) : Navigate to the specified URL.
+- open-new-page(url) : Open a page in a new tab.
 - get-page-content() : Get the readability content of the current page.
-
 
 ## Usage
 
@@ -16,7 +17,7 @@ This project is an experimental project aimed at manipulating a browser through 
 
 - bun
 - pnpm
-  
+
 ```bash
 pnpm install
 ```
@@ -26,13 +27,13 @@ pnpm install
 ```json
 {
   "mcpServers": {
-    "mcp-server-playwright":{
-        "command": "bun",
-        "args": ["yourpath/mcp-server-playwright/src/index.ts"],
-        "env": {
-          "CHROME_PATH": "your_chrome_path",
-          "MUSER_DATA_DIR": "your_chrome_user_data_path",
-        },
+    "mcp-server-playwright": {
+      "command": "bun",
+      "args": ["yourpath/mcp-server-playwright/src/index.ts"],
+      "env": {
+        "CHROME_PATH": "your_chrome_path",
+        "MUSER_DATA_DIR": "your_chrome_user_data_path"
+      }
     }
   }
 }
