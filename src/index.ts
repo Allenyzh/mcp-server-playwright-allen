@@ -84,13 +84,13 @@ server.tool(
   }
 )
 
-// server.tool("get-open-pages",
-//   "List all open browser pages",
-//   {},
-//   async (args, extra) => {
-//     return await getOpenPages();
-//   }
-// );
+server.tool("get-open-pages",
+  "List all open browser pages",
+  {},
+  async (args, extra) => {
+    return await getOpenPages();
+  }
+);
 
 server.tool(
   "get-page-content",
