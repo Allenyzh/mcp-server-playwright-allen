@@ -1,14 +1,16 @@
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
-import { chromium, BrowserContext, Page } from 'playwright';
-import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
+import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { chromium, BrowserContext, Page } from "playwright";
+import { Readability } from "@mozilla/readability";
+import { JSDOM } from "jsdom";
 
 let browserContext: null | BrowserContext = null;
 
 // Initialize context
 async function initializeContext(url?: string): Promise<CallToolResult> {
-  const chromePath = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-  const userDataDir = process.env.USER_DATA_DIR || 'userdata/chrome-user-data';
+  const chromePath =
+    process.env.CHROME_PATH ||
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  const userDataDir = process.env.USER_DATA_DIR || "userdata/chrome-user-data";
 
   let message = "";
 
@@ -27,8 +29,7 @@ async function initializeContext(url?: string): Promise<CallToolResult> {
         await page.goto(url);
         message += ` Opened URL: ${url}`;
       }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       message = `Failed to open browser: ${error.message}`;
     }
   }
@@ -38,7 +39,7 @@ async function initializeContext(url?: string): Promise<CallToolResult> {
       {
         type: "text",
         text: message,
-      }
+      },
     ],
   };
 }
@@ -63,7 +64,7 @@ async function closeContext(): Promise<CallToolResult> {
       {
         type: "text",
         text: message,
-      }
+      },
     ],
   };
 }
@@ -99,7 +100,7 @@ async function navigateToPage(url: string): Promise<CallToolResult> {
       {
         type: "text",
         text: message,
-      }
+      },
     ],
   };
 }
@@ -119,7 +120,6 @@ async function getCurrentPage(): Promise<Page | null> {
   }
 }
 
-
 async function getPageContent(): Promise<CallToolResult> {
   const page = await getCurrentPage();
 
@@ -135,8 +135,7 @@ async function getPageContent(): Promise<CallToolResult> {
 
       if (article && article.textContent) {
         message = article.textContent;
-      }
-      else {
+      } else {
         message = "Failed to parse article content.";
       }
     } catch (error: any) {
@@ -148,11 +147,10 @@ async function getPageContent(): Promise<CallToolResult> {
       {
         type: "text",
         text: message,
-      }
+      },
     ],
   };
 }
-
 
 // Create a new page and navigate to specified URL
 async function createAndNavigateToPage(url: string): Promise<CallToolResult> {
@@ -170,13 +168,11 @@ async function createAndNavigateToPage(url: string): Promise<CallToolResult> {
     let pageTitle = "";
     try {
       pageTitle = await page.title();
-    }
-    catch (titleError) {
+    } catch (titleError) {
       pageTitle = "[Unable to retrieve page title]";
     }
     message = `Successfully navigated to ${url}. Page title: ${pageTitle}`;
-  }
-  catch (error: any) {
+  } catch (error: any) {
     message = `Failed to navigate to ${url}: ${error.message}`;
   }
   return {
@@ -184,7 +180,7 @@ async function createAndNavigateToPage(url: string): Promise<CallToolResult> {
       {
         type: "text",
         text: message,
-      }
+      },
     ],
   };
 }
@@ -224,14 +220,92 @@ async function getOpenPages(): Promise<CallToolResult> {
     content: [
       {
         type: "text",
-        text: pageInfo.length > 0
-          ? `Open pages:\n${pageInfo.join('\n')}`
-          : "No pages are currently open."
-      }
+        text:
+          pageInfo.length > 0
+            ? `Open pages:\n${pageInfo.join("\n")}`
+            : "No pages are currently open.",
+      },
     ],
   };
 }
 
+/**
+ * Opens a new page in the existing browser context
+ * @param url The URL to navigate to
+ * @returns The new page
+ */
+async function openNewPage(url: string): Promise<CallToolResult> {
+  if (!browserContext) {
+    throw new Error("Browser context is not initialized.");
+  }
 
+  const page = await browserContext.newPage();
+  await page.goto(url);
+  return {
+    content: [
+      {
+        type: "text",
+        text: `New page ${url} opened successfully!  `,
+      },
+    ],
+  };
+}
 
-export { initializeContext, createAndNavigateToPage, getOpenPages, closeContext, navigateToPage, getPageContent };
+/**
+ * Closes the specified page
+ * @param pageNumber The page number to close
+ * @returns A message indicating success or failure
+ */
+async function closePage(pageNumber: number): Promise<CallToolResult> {
+  if (!browserContext) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: "Browser context is not initialized.",
+        },
+      ],
+    };
+  }
+
+  // Check if the page nunber is valid
+  if (pageNumber < 1 || pageNumber > browserContext.pages().length) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Invalid page number. Please provide a number between 1 and ${
+            browserContext.pages().length
+          }.`,
+        },
+      ],
+    };
+  }
+
+  await browserContext.pages()[pageNumber - 1].close();
+  // Get the context of the closed page
+  const context = browserContext.pages()[pageNumber - 1].context();
+  // If there are no more pages in the context, close the context
+  if (context.pages().length === 0) {
+    await context.close();
+  }
+  return {
+    content: [
+      {
+        type: "text",
+        text: `Page ${pageNumber} closed successfully.`,
+      },
+    ],
+  };
+}
+
+export {
+  initializeContext,
+  createAndNavigateToPage,
+  getOpenPages,
+  closeContext,
+  navigateToPage,
+  getPageContent,
+  openNewPage,
+  closePage,
+};

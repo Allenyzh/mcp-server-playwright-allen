@@ -3,12 +3,22 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { initializeContext, getOpenPages, closeContext, navigateToPage, getPageContent } from "./chrome.js";
-
+import {
+  initializeContext,
+  getOpenPages,
+  closeContext,
+  navigateToPage,
+  getPageContent,
+  closePage,
+  openNewPage,
+} from "./chrome.js";
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const { name: package_name, version: package_version } = require("../package.json");
+const {
+  name: package_name,
+  version: package_version,
+} = require("../package.json");
 
 // Create server instance
 const server = new McpServer({
@@ -16,8 +26,8 @@ const server = new McpServer({
   version: package_version,
 });
 
-
-server.tool("open-browser",
+server.tool(
+  "open-browser",
   "Open a browser instance",
   {
     url: z.string().optional().describe("The URL to open in the browser"),
@@ -27,7 +37,24 @@ server.tool("open-browser",
   }
 );
 
-server.tool("close-browser",
+// Close a specific page
+server.tool(
+  "close-page",
+  "Close a specific page",
+  {
+    pageNumber: z
+      .number()
+      .describe(
+        "The number of the page to close. Do not convert it to the index."
+      ),
+  },
+  async (args) => {
+    return await closePage(args.pageNumber);
+  }
+);
+
+server.tool(
+  "close-browser",
   "Close the browser instance",
   {},
   async (args, extra) => {
@@ -35,32 +62,44 @@ server.tool("close-browser",
   }
 );
 
-server.tool("navigate-to-page",
+server.tool(
+  "navigate-to-page",
   "Navigate to a new page with the specified URL",
   {
-    url: z.string().describe("The URL to navigate to")
+    url: z.string().describe("The URL to navigate to"),
   },
   async (args, extra) => {
     return await navigateToPage(args.url);
   }
 );
 
-// server.tool("get-open-pages",
-//   "List all open browser pages",
-//   {},
-//   async (args, extra) => {
-//     return await getOpenPages();
-//   }
-// );
+server.tool(
+  "open-new-page",
+  "Open a new page in the existing browser context",
+  {
+    url: z.string().describe("The URL of the web page to launch and it must be a valid URL like https://www.google.com"),
+  },
+  async (args) => {
+    return await openNewPage(args.url);
+  }
+)
 
-server.tool("get-page-content",
+server.tool("get-open-pages",
+  "List all open browser pages",
+  {},
+  async (args, extra) => {
+    return await getOpenPages();
+  }
+);
+
+server.tool(
+  "get-page-content",
   "Get the content of a page",
   {},
   async (args, extra) => {
     return await getPageContent();
   }
 );
-
 
 async function main() {
   // Create a transport instance
