@@ -299,6 +299,48 @@ async function closePage(pageNumber: number): Promise<CallToolResult> {
   };
 }
 
+/**
+ * Types the specified text in the search bar of google.com
+ * @param text `string`The text to type
+ * @returns A message indicating success or failure
+ */
+async function typeInGoogleSearchBar(text: string): Promise<CallToolResult> {
+  const regex = /^https?:\/\/([a-zA-Z0-9-]+\.)*google\.com(\/|$)/; // Regex to match google.com URLs
+  const page = await getCurrentPage();
+
+  if (!page || !regex.test(page.url())) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: `No open pages to type in or the current page is not "google.com"`,
+        },
+      ],
+    };
+  }
+
+  console.error(`Typing "${text}" in the search bar...`);
+  await page.locator(`textarea[name="q"]`).click({
+    button: "left",
+  });
+  // await page.keyboard.type(text, { delay: 500 });
+  for (const char of text) {
+    await page.keyboard.insertText(char);
+    const delay = Math.random() * 300 + 100;
+    await page.waitForTimeout(delay);
+  }
+  await page.keyboard.press("Enter");
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: `Typed "${text}" in the search bar.`,
+      },
+    ],
+  };
+}
+
 export {
   initializeContext,
   createAndNavigateToPage,
@@ -308,4 +350,15 @@ export {
   getPageContent,
   openNewPage,
   closePage,
+  typeInGoogleSearchBar,
 };
+
+// await initializeContext();
+// await navigateToPage("https://www.google.com");
+// try{
+//   await typeInGoogleSearchBar("8964是什么");
+//   await new Promise(resolve => setTimeout(resolve, 20000));
+// } catch (error) {
+//   console.error("Error typing in search bar:", error);
+// }
+// await closeContext();
