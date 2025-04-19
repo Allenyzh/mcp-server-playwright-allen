@@ -11,6 +11,7 @@ import {
   getPageContent,
   closePage,
   openNewPage,
+  typeInGoogleSearchBar,
 } from "./chrome.js";
 
 import { createRequire } from "module";
@@ -77,14 +78,19 @@ server.tool(
   "open-new-page",
   "Open a new page in the existing browser context",
   {
-    url: z.string().describe("The URL of the web page to launch and it must be a valid URL like https://www.google.com"),
+    url: z
+      .string()
+      .describe(
+        "The URL of the web page to launch and it must be a valid URL like https://www.google.com"
+      ),
   },
   async (args) => {
     return await openNewPage(args.url);
   }
-)
+);
 
-server.tool("get-open-pages",
+server.tool(
+  "get-open-pages",
   "List all open browser pages",
   {},
   async (args, extra) => {
@@ -98,6 +104,17 @@ server.tool(
   {},
   async (args, extra) => {
     return await getPageContent();
+  }
+);
+
+server.tool(
+  "type-text-in-google-search",
+  "Type text in Google search",
+  {
+    text: z.string().describe("The text to type in the search bar"),
+  },
+  async (args) => {
+    return await typeInGoogleSearchBar(args.text);
   }
 );
 
